@@ -1,9 +1,9 @@
 # -*- coding: utf8 -*-
 
-# Выкачивает:
-#    Избранные места,
-#    Закладки,
-#    Историю поиска.
+# Extracted data:
+#    Favorite places
+#    Bookmarks
+#    Search queries history
 
 from physical import *
 import SQLiteParser
@@ -39,7 +39,6 @@ class YandexMapsLabel(object):
 
         return locationModel
 
-    # too lazy to do
     def parseAddress(self):
         pass
 
@@ -73,7 +72,6 @@ class YandexMapsRoute(object):
 
         return locationModel
 
-    # so bad method
     def parseAddress(self):
         streetAddressModel = StreetAddress()
 
@@ -170,7 +168,7 @@ class YandexMapsParser(object):
             self.models.append(YandexMapsRoute(rec).toModel())
 
     def parseSearchHistory(self):
-       	dbNode = self.mainDir.GetByPath('yandexsuggest_history.db')
+        dbNode = self.mainDir.GetByPath('yandexsuggest_history.db')
 
         if dbNode is None or dbNode.Data is None:
             return
@@ -186,22 +184,24 @@ class YandexMapsParser(object):
 
         if self.extractDeleted:
             SQLiteParser.Tools.AddSignatureToTable(ts, 'c0suggest_text_1',
-                SQLiteParser.Tools.SignatureType.Null, SQLiteParser.Tools.SignatureType.Text)
+                                                   SQLiteParser.Tools.SignatureType.Null,
+                                                   SQLiteParser.Tools.SignatureType.Text)
             SQLiteParser.Tools.AddSignatureToTable(ts, 'c3time',
-                SQLiteParser.Tools.SignatureType.Null, SQLiteParser.Tools.SignatureType.Int48)
+                                                   SQLiteParser.Tools.SignatureType.Null,
+                                                   SQLiteParser.Tools.SignatureType.Int48)
 
         for rec in db.ReadTableRecords(ts, self.extractDeleted):
             vp = SearchedItem()
             vp.Source.Value = self.source
 
-            # crunch
             vp.Deleted = DeletedState.Intact
             SQLiteParser.Tools.ReadColumnToField(rec, 'c0suggest_text_1', vp.Value, self.extractSource)
             SQLiteParser.Tools.ReadColumnToField[TimeStamp](rec, 'c3time',
-                vp.TimeStamp, self.extractSource, commonTimestampParse)
+                                                            vp.TimeStamp, self.extractSource, commonTimestampParse)
 
             if rec['c0suggest_text_1'].Value:
                 self.models.append(vp)
+
 
 # getting the node from the filesystem
 node = ds.FileSystems[0]['/data/data/ru.yandex.yandexmaps']

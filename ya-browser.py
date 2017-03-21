@@ -1,10 +1,10 @@
 # -*- coding: utf8 -*-
 
-# Выкачивает:
-#    Cookie Файлы,
-#    Историю,
-#    Логины - Пароли,
-#    Историю поиска.
+# Extracted data:
+#    Cookies
+#    Visited sites history
+#    Credential
+#    Search queries history
 
 from physical import *
 import SQLiteParser
@@ -53,22 +53,26 @@ class YandexBrowserParser(object):
         ts = SQLiteParser.TableSignature('urls')
 
         if self.extractDeleted:
-            SQLiteParser.Tools.AddSignatureToTable(ts, 'url', SQLiteParser.Tools.SignatureType.Null, SQLiteParser.Tools.SignatureType.Text)
-            SQLiteParser.Tools.AddSignatureToTable(ts, 'title', SQLiteParser.Tools.SignatureType.Null, SQLiteParser.Tools.SignatureType.Text)
-            SQLiteParser.Tools.AddSignatureToTable(ts, 'visit_count', SQLiteParser.Tools.SignatureType.Const0, SQLiteParser.Tools.SignatureType.Int48)
-            SQLiteParser.Tools.AddSignatureToTable(ts, 'last_visit_time', SQLiteParser.Tools.SignatureType.Null, SQLiteParser.Tools.SignatureType.Int48)
+            SQLiteParser.Tools.AddSignatureToTable(ts, 'url', SQLiteParser.Tools.SignatureType.Null,
+                                                   SQLiteParser.Tools.SignatureType.Text)
+            SQLiteParser.Tools.AddSignatureToTable(ts, 'title', SQLiteParser.Tools.SignatureType.Null,
+                                                   SQLiteParser.Tools.SignatureType.Text)
+            SQLiteParser.Tools.AddSignatureToTable(ts, 'visit_count', SQLiteParser.Tools.SignatureType.Const0,
+                                                   SQLiteParser.Tools.SignatureType.Int48)
+            SQLiteParser.Tools.AddSignatureToTable(ts, 'last_visit_time', SQLiteParser.Tools.SignatureType.Null,
+                                                   SQLiteParser.Tools.SignatureType.Int48)
 
         for rec in db.ReadTableRecords(ts, self.extractDeleted):
             vp = VisitedPage()
             vp.Source.Value = self.source
 
-            # crunch
             vp.Deleted = DeletedState.Intact
 
             SQLiteParser.Tools.ReadColumnToField(rec, 'title', vp.Title, self.extractSource)
             SQLiteParser.Tools.ReadColumnToField(rec, 'url', vp.Url, self.extractSource)
             SQLiteParser.Tools.ReadColumnToField(rec, 'visit_count', vp.VisitCount, self.extractSource)
-            SQLiteParser.Tools.ReadColumnToField[TimeStamp](rec, 'last_visit_time', vp.LastVisited, self.extractSource, chromiumTimestampParse)
+            SQLiteParser.Tools.ReadColumnToField[TimeStamp](rec, 'last_visit_time', vp.LastVisited, self.extractSource,
+                                                            chromiumTimestampParse)
 
             self.models.append(vp)
 
@@ -90,12 +94,11 @@ class YandexBrowserParser(object):
         if self.extractDeleted:
             SQLiteParser.Tools.AddSignatureToTable(ts, 'action_url', SQLiteParser.Tools.SignatureType.Text)
             SQLiteParser.Tools.AddSignatureToTable(ts, 'username_value', SQLiteParser.Tools.SignatureType.Text)
-            SQLiteParser.Tools.AddSignatureToTable(ts, 'password_value',  SQLiteParser.Tools.SignatureType.Blob)
+            SQLiteParser.Tools.AddSignatureToTable(ts, 'password_value', SQLiteParser.Tools.SignatureType.Blob)
 
         for rec in db.ReadTableRecords(ts, self.extractDeleted):
             ps = Password()
 
-            # crunch
             ps.Deleted = DeletedState.Intact
 
             SQLiteParser.Tools.ReadColumnToField(rec, 'action_url', ps.Service, self.extractSource)
@@ -120,7 +123,7 @@ class YandexBrowserParser(object):
 
         if self.extractDeleted:
             SQLiteParser.Tools.AddSignatureToTable(ts, 'creation_utc', SQLiteParser.Tools.SignatureType.Int)
-            SQLiteParser.Tools.AddSignatureToTable(ts, 'last_access_utc', SQLiteParser.Tools.SignatureType.Int)            
+            SQLiteParser.Tools.AddSignatureToTable(ts, 'last_access_utc', SQLiteParser.Tools.SignatureType.Int)
             SQLiteParser.Tools.AddSignatureToTable(ts, 'host_key', SQLiteParser.Tools.SignatureType.Text)
             SQLiteParser.Tools.AddSignatureToTable(ts, 'name', SQLiteParser.Tools.SignatureType.Text)
             SQLiteParser.Tools.AddSignatureToTable(ts, 'path', SQLiteParser.Tools.SignatureType.Text)
@@ -130,15 +133,17 @@ class YandexBrowserParser(object):
             c = Cookie()
             c.Deleted = rec.Deleted
 
-            # crunch
             c.Deleted = DeletedState.Intact
 
             SQLiteParser.Tools.ReadColumnToField(rec, 'name', c.Name, self.extractSource)
             SQLiteParser.Tools.ReadColumnToField(rec, 'value', c.Value, self.extractSource)
             SQLiteParser.Tools.ReadColumnToField(rec, 'host_key', c.Domain, self.extractSource)
             SQLiteParser.Tools.ReadColumnToField(rec, 'path', c.Path, self.extractSource)
-            SQLiteParser.Tools.ReadColumnToField[TimeStamp](rec, 'creation_utc', c.CreationTime, self.extractSource, lambda ts: TimeStamp.FromUnixTime(ts / 1000000))
-            SQLiteParser.Tools.ReadColumnToField[TimeStamp](rec, 'last_access_utc', c.LastAccessTime, self.extractSource, lambda ts: TimeStamp.FromUnixTime(ts / 1000000))            
+            SQLiteParser.Tools.ReadColumnToField[TimeStamp](rec, 'creation_utc', c.CreationTime, self.extractSource,
+                                                            lambda ts: TimeStamp.FromUnixTime(ts / 1000000))
+            SQLiteParser.Tools.ReadColumnToField[TimeStamp](rec, 'last_access_utc', c.LastAccessTime,
+                                                            self.extractSource,
+                                                            lambda ts: TimeStamp.FromUnixTime(ts / 1000000))
 
             self.models.append(c)
 
@@ -158,12 +163,12 @@ class YandexBrowserParser(object):
         ts = SQLiteParser.TableSignature('keyword_search_terms')
 
         if self.extractDeleted:
-            SQLiteParser.Tools.AddSignatureToTable(ts, 'term', SQLiteParser.Tools.SignatureType.Null, SQLiteParser.Tools.SignatureType.Text)
+            SQLiteParser.Tools.AddSignatureToTable(ts, 'term', SQLiteParser.Tools.SignatureType.Null,
+                                                   SQLiteParser.Tools.SignatureType.Text)
 
         for rec in db.ReadTableRecords(ts, self.extractDeleted):
             vp = SearchedItem()
 
-            # crunch
             vp.Deleted = DeletedState.Intact
             vp.Source.Value = self.source
 
